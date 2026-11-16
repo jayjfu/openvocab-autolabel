@@ -9,8 +9,11 @@
 TODO: teacher model generates pseudo-labels images from text prompts, then a student model trains on those labels. 
 
 ```bash
-python pseudo_label.py --ratio 0.03
-python make_labels.py --label_threshold 0.35
+python run_teacher.py --ratio 0.03
+
+python calibrate_thresholds.py --num_calibration 200
+python analyze_pseudo_labels.py
+python make_pseudo_labels.py --class_thresholds ../../output/calibration/class_thresholds.yaml
 ```
 
 ```bash

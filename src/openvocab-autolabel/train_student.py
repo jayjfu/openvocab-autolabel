@@ -9,11 +9,11 @@ from utils.paths import ROOT
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", default=str(ROOT / "data/bdd100k/data.yaml"))
-    parser.add_argument("--model", default=str(ROOT / "src/openvocab-autolabel/ckpts/yolo11n.pt"))
+    parser.add_argument("--model", default=str(ROOT / "ckpts/yolo11n.pt"))
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--image_size", type=int, default=640)
     parser.add_argument("--batch", type=int, default=32)
-    parser.add_argument("--project", default=str(ROOT / "src/openvocab-autolabel/ckpts"))
+    parser.add_argument("--project", default=str(ROOT / "ckpts"))
     parser.add_argument("--name", default="student")
     args = parser.parse_args()
 

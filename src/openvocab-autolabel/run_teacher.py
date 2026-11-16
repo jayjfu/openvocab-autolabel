@@ -9,15 +9,11 @@ from PIL import Image
 from tqdm import tqdm
 
 from utils.bdd100k import CLASS_SYNONYMS, CLASSES, SPLITS, read_human_labels, read_image_bytes, stream_images
-from utils.formats import to_scored_line, to_yolo_line
+from utils.data_files import to_scored_line, to_yolo_line, write_lines
 from utils.paths import ROOT
 from utils.teacher import build_class_prompt, detect_classes, load_teacher
 
 OUTPUT_KINDS = ["images", "labels_human", "predictions_teacher"]
-
-
-def write_lines(path, lines):
-    path.write_text("\n".join(lines))
 
 
 def main():
