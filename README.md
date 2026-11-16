@@ -1,9 +1,7 @@
-# Open-vocabulary Auto-labeling for Autonomous Driving
+# Open-vocabulary Auto-labeling
 
-### TODO
-<!-- 
 ### This repo uses a VLM / open-vocabulary detector as a teacher to generate pseudo-labels, then train a lightweight student detector.
--->
+
 *(Work in Progress: This repository is currently under active development.)*
 
 ## Introduction
