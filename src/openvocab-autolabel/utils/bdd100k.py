@@ -4,8 +4,16 @@ from datasets import Image as ImageFeature
 from datasets import load_dataset
 from huggingface_hub import HfFileSystem
 
-CLASSES = ["pedestrian", "rider", "car", "truck", "bus", "train", "motorcycle", "bicycle", "traffic light", "traffic sign"]
-ALIASES = {"person": "pedestrian", "bike": "bicycle", "motor": "motorcycle"}
+CLASSES = ["person", "rider", "car", "truck", "bus", "train", "motor", "bike", "traffic light", "traffic sign"]
+CLASS_SYNONYMS = {
+    "person": ["pedestrian"],
+    "rider": ["cyclist"],
+    "train": ["tram"],
+    "motor": ["motorcycle", "motorbike"],
+    "bike": ["bicycle"],
+    "traffic sign": ["road sign"],
+}
+SPLITS = ["train", "val", "test"]
 IMAGE_ROOT = "data/images_100k/100k"
 LABEL_ROOT = "data/labels/100k"
 
@@ -28,7 +36,7 @@ def read_human_labels(file_system, image_path):
     boxes, class_ids = [], []
     for frame in record.get("frames", []):
         for labeled_object in frame.get("objects", []):
-            category = ALIASES.get(labeled_object.get("category"), labeled_object.get("category"))
+            category = labeled_object.get("category")
             box = labeled_object.get("box2d")
             if box is None or category not in CLASSES:
                 continue

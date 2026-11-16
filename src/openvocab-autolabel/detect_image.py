@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-from utils.bdd100k import CLASSES
+from utils.bdd100k import CLASS_SYNONYMS, CLASSES
 from utils.paths import ROOT
 from utils.teacher import build_prompt, detect, load_teacher
 
@@ -12,7 +12,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", required=True)
     parser.add_argument("--model_id", default="IDEA-Research/grounding-dino-tiny")
-    parser.add_argument("--prompt", default=build_prompt(CLASSES))
+    parser.add_argument("--prompt", default=build_prompt([phrase for name in CLASSES for phrase in [name] + CLASS_SYNONYMS.get(name, [])]))
     parser.add_argument("--box_threshold", type=float, default=0.35)
     parser.add_argument("--text_threshold", type=float, default=0.25)
     parser.add_argument("--output", default=str(ROOT / "output/detections.jpg"))

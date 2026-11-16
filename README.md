@@ -10,7 +10,7 @@ TODO: teacher model generates pseudo-labels images from text prompts, then a stu
 
 ```bash
 python pseudo_label.py --ratio 0.03
-
+python make_labels.py --label_threshold 0.35
 ```
 
 ```bash

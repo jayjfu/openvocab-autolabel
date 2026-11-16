@@ -8,13 +8,12 @@ from huggingface_hub import HfFileSystem
 from PIL import Image
 from tqdm import tqdm
 
-from utils.bdd100k import CLASSES, read_human_labels, read_image_bytes, stream_images
+from utils.bdd100k import CLASS_SYNONYMS, CLASSES, SPLITS, read_human_labels, read_image_bytes, stream_images
+from utils.formats import to_scored_line, to_yolo_line
 from utils.paths import ROOT
-from utils.formats import to_scored_line, to_yolo_line, write_data_config
-from utils.teacher import build_prompt, detect, label_to_class, load_teacher
+from utils.teacher import build_class_prompt, detect_classes, load_teacher
 
-SPLITS = ["train", "val", "test"]
-OUTPUT_KINDS = ["images", "labels", "labels_human", "predictions_teacher"]
+OUTPUT_KINDS = ["images", "labels_human", "predictions_teacher"]
 
 
 def write_lines(path, lines):
@@ -26,14 +25,14 @@ def main():
     parser.add_argument("--repo_id", default="dronefreak/BDD100K")
     parser.add_argument("--model_id", default="IDEA-Research/grounding-dino-tiny")
     parser.add_argument("--ratio", type=float, default=0.03)
-    parser.add_argument("--teacher_floor", type=float, default=0.1)
-    parser.add_argument("--label_threshold", type=float, default=0.35)
-    parser.add_argument("--text_threshold", type=float, default=0.25)
+    parser.add_argument("--no_synonyms", action="store_true")
+    parser.add_argument("--teacher_floor", type=float, default=0.05)
     parser.add_argument("--output", default=str(ROOT / "data/bdd100k"))
     args = parser.parse_args()
 
     model, processor = load_teacher(args.model_id)
-    prompt = build_prompt(CLASSES)
+    class_prompt = build_class_prompt(processor, CLASSES, None if args.no_synonyms else CLASS_SYNONYMS)
+    print("prompt:", class_prompt["prompt"])
     file_system = HfFileSystem()
     output_dir = Path(args.output).resolve()
 
@@ -58,18 +57,11 @@ def main():
             write_lines(folders["labels_human"] / f"{name}.txt",
                         [to_yolo_line(class_id, box, width, height) for box, class_id in zip(human_boxes, human_classes)])
 
-            boxes, scores, labels = detect(model, processor, image, prompt, args.teacher_floor, args.text_threshold)
-            predictions = [(label_to_class(label, CLASSES), score, box) for box, score, label in zip(boxes, scores, labels)]
-            predictions = [prediction for prediction in predictions if prediction[0] is not None]
+            boxes, scores, class_ids = detect_classes(model, processor, image, class_prompt, args.teacher_floor)
             write_lines(folders["predictions_teacher"] / f"{name}.txt",
-                        [to_scored_line(class_id, score, box) for class_id, score, box in predictions])
-            write_lines(folders["labels"] / f"{name}.txt",
-                        [to_yolo_line(class_id, box, width, height)
-                         for class_id, score, box in predictions if score >= args.label_threshold])
+                        [to_scored_line(class_id, score, box) for class_id, score, box in zip(class_ids, scores, boxes)])
 
         print(f"{split} human boxes per class:", dict(human_counts.most_common()))
-
-    write_data_config(output_dir, CLASSES)
 
 
 if __name__ == "__main__":
